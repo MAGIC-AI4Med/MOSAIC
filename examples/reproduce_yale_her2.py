@@ -21,6 +21,7 @@ from transformers import AutoModel
 from huggingface_hub import snapshot_download
 
 MODEL_ID = "Astaxanthin/MOSAIC"
+EXAMPLE_DATA_URL = "https://drive.google.com/drive/folders/1IUbXoDB1KSfdNoSZMUHderIqItNFMSA1?usp=drive_link"
 
 
 def resolve_model(model_id, revision="main"):
@@ -95,7 +96,11 @@ def check_paths(args, metadata_key):
     for field in ("features", metadata_key):
         path = Path(getattr(args, field)).expanduser().resolve()
         if not path.exists():
-            raise FileNotFoundError(f"Missing {field}: {path}")
+            raise FileNotFoundError(
+                f"Missing {field}: {path}\n"
+                f"Download the example features and metadata from {EXAMPLE_DATA_URL}\n"
+                "See README: Download example data, or pass your local paths explicitly."
+            )
         setattr(args, field, str(path))
     args.output = str(Path(args.output).expanduser().resolve())
     if getattr(args, "reference", None):
@@ -117,14 +122,16 @@ def digest(path):
 
 def parse_args(argv=None):
     base = Path(__file__).resolve().parent.parent
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__, epilog=f"Example data: {EXAMPLE_DATA_URL}"
+    )
     parser.add_argument("--model", default=MODEL_ID)
     parser.add_argument(
-        "--features", default=str(base / "data" / "yale_her2" / "features")
+        "--features", default=str(base / "data" / "example_yale-her2_feats")
     )
     parser.add_argument(
         "--metadata",
-        default=str(base / "data" / "yale_her2" / "yale_her2_dataset.json"),
+        default=str(base / "data" / "yale_her2_dataset.json"),
     )
     parser.add_argument(
         "--reference",
